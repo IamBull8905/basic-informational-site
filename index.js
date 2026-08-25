@@ -1,31 +1,46 @@
-import http from "node:http";
-import fs from "node:fs";
-import { fileURLToPath } from "node:url";
+const { loadEnvFile } = require("node:process");
+const express = require("express");
+loadEnvFile();
+const app = express();
+const PORT = process.env.PORT || 8080;
 
-const server = http.createServer();
-server.on("request", (req, res) => {
-  let currPath = fileURLToPath(import.meta.url);
-  switch (req.url) {
-    case "/":
-      currPath = "./index.html";
-      break;
-    case "/about":
-      currPath = "./about.html";
-      break;
-    case "/contact-me":
-      currPath = "./contact-me.html";
-      break;
-    default:
-      currPath = "./404.html";
-  }
-  fs.readFile(currPath, "utf8", (err, data) => {
+app.get("/", (req, res) => {
+  res.sendFile(__dirname + "/index.html", (err) => {
     if (err) {
-      console.error(err);
-      return;
+      throw err;
+    } else {
+      console.log("Sent homepage html file!");
     }
-    res.writeHead(200, { "Content-Type": "text/html" });
-    res.end(data);
   });
 });
 
-server.listen(8080);
+app.get("/about", (req, res) => {
+  res.sendFile(__dirname + "/about.html", (err) => {
+    if (err) {
+      throw err;
+    } else {
+      console.log("Sent about html file!");
+    }
+  });
+});
+
+app.get("/contact-me", (req, res) => {
+  res.sendFile(__dirname + "/contact-me.html", (err) => {
+    if (err) {
+      throw err;
+    } else {
+      console.log("Sent contact me html file!");
+    }
+  });
+});
+
+app.use(function (req, res) {
+  res.status(404).sendFile(__dirname + "/404.html");
+});
+
+app.listen(PORT, (error) => {
+  if (error) {
+    throw error;
+  }
+  console.log(`My Express app listening on port ${PORT}!`);
+});
